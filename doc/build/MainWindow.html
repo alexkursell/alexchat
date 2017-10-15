@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>MainWindow module &#8212; AlexChat 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="MySocket module" href="MySocket.html" />
+    <link rel="prev" title="CustomNotebook module" href="CustomNotebook.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">AlexChat Introduction</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Source Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="AddressBook.html">AddressBook module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Connection.html">Connection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ConnectionManager.html">ConnectionManager module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ConversationTab.html">ConversationTab module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CustomNotebook.html">CustomNotebook module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">MainWindow module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MySocket.html">MySocket module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TCPSocket.html">TCPSocket module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="UDPSocket.html">UDPSocket module</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/MainWindow.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-MainWindow">
+<span id="mainwindow-module"></span><h1>MainWindow module<a class="headerlink" href="#module-MainWindow" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="MainWindow.MainWindow">
+<em class="property">class </em><code class="descclassname">MainWindow.</code><code class="descname">MainWindow</code><span class="sig-paren">(</span><em>master</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MainWindow.html#MainWindow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MainWindow.MainWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">tkinter.Frame</span></code></p>
+<p>The root class in the application, contains all objects. Handles the basic
+GUI layout, as well as passing messages between the network code (NetworkManager)
+and the ConversationTabs where input is taken and output is displayed.
+Inherits from tkinter.Frame.</p>
+<dl class="method">
+<dt id="MainWindow.MainWindow.add_tab">
+<code class="descname">add_tab</code><span class="sig-paren">(</span><em>newId</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MainWindow.html#MainWindow.add_tab"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MainWindow.MainWindow.add_tab" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method that adds a tab with the given ID. The ID is also the title.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>newId</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The ID of the new tab</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="MainWindow.MainWindow.create_widgets">
+<code class="descname">create_widgets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/MainWindow.html#MainWindow.create_widgets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MainWindow.MainWindow.create_widgets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to initialize default GUI elements, namely the Notebook and the Overview tab.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="MainWindow.MainWindow.on_close">
+<code class="descname">on_close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/MainWindow.html#MainWindow.on_close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MainWindow.MainWindow.on_close" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method called when the root window is closed. Signals the
+NetworkManager to close all connections, then closes the window.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="MainWindow.MainWindow.queue_loop">
+<code class="descname">queue_loop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/MainWindow.html#MainWindow.queue_loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MainWindow.MainWindow.queue_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>A looping method to handle function calls passed from the network manager
+via the instructionQueue. Repeats every 250ms. Used to placate tkinter&#8217;s hatred of threads</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="MainWindow.MainWindow.send_text">
+<code class="descname">send_text</code><span class="sig-paren">(</span><em>thisId</em>, <em>text</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MainWindow.html#MainWindow.send_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MainWindow.MainWindow.send_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method called by ConversationTabs to send the
+given text to the NetworkManager to be sent.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>thisId</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The ID of the tab sending the message</li>
+<li><strong>text</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The text to be sent.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="MainWindow.MainWindow.tab_closed">
+<code class="descname">tab_closed</code><span class="sig-paren">(</span><em>tabId</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MainWindow.html#MainWindow.tab_closed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MainWindow.MainWindow.tab_closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method called by the CustomNotebook when a tab is
+closed by pressing the &#8216;X&#8217; button.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tabId</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The ID of the tab to be closed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="MainWindow.MainWindow.text_received">
+<code class="descname">text_received</code><span class="sig-paren">(</span><em>thisId</em>, <em>text</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MainWindow.html#MainWindow.text_received"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MainWindow.MainWindow.text_received" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method to add a given string to the ConversationTab with the given ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>thisId</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The ID of the tab where the message should be sent.</li>
+<li><strong>text</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The text to be added to the tab.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2016, Alex Kursell.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/MainWindow.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

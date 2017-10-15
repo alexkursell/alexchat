@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Connection module &#8212; AlexChat 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ConnectionManager module" href="ConnectionManager.html" />
+    <link rel="prev" title="AddressBook module" href="AddressBook.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">AlexChat Introduction</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Source Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="AddressBook.html">AddressBook module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Connection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ConnectionManager.html">ConnectionManager module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ConversationTab.html">ConversationTab module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CustomNotebook.html">CustomNotebook module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MainWindow.html">MainWindow module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MySocket.html">MySocket module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TCPSocket.html">TCPSocket module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="UDPSocket.html">UDPSocket module</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Connection.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-Connection">
+<span id="connection-module"></span><h1>Connection module<a class="headerlink" href="#module-Connection" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="Connection.Connection">
+<em class="property">class </em><code class="descclassname">Connection.</code><code class="descname">Connection</code><span class="sig-paren">(</span><em>myId</em>, <em>sock</em>, <em>master=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Connection.html#Connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Connection.Connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>This class provides a convenient layer between the NetworkManager
+and a socket object (either UDPSocket or TCPSocket), allowing messages
+from the socket to be read and sent to the proper method of the ConnectionManager class.</p>
+<dl class="method">
+<dt id="Connection.Connection.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Connection.html#Connection.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Connection.Connection.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method that closes the socket.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Connection.Connection.read_loop">
+<code class="descname">read_loop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Connection.html#Connection.read_loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Connection.Connection.read_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains an infinite loop that waits for input from the socket
+and passes it to the new_read method in the ConnectionManager.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Connection.Connection.receive">
+<code class="descname">receive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Connection.html#Connection.receive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Connection.Connection.receive" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method that waits untill it receives a message
+from the socket, then returns that message, as well as the senders IP.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/2/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Connection.Connection.send">
+<code class="descname">send</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Connection.html#Connection.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Connection.Connection.send" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method that sends a message through the socket.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>msg</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The message to be sent.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Connection.Connection.set_id">
+<code class="descname">set_id</code><span class="sig-paren">(</span><em>newId</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Connection.html#Connection.set_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Connection.Connection.set_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method that sets the ID of the socket. It often needs to be changed
+once a username is received (as the ID is the connected username).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>newId</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The new ID.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Connection.Connection.start_listening">
+<code class="descname">start_listening</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Connection.html#Connection.start_listening"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Connection.Connection.start_listening" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and start a thread to continuously read for input
+from the socket.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Connection.Connection.write_loop">
+<code class="descname">write_loop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Connection.html#Connection.write_loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Connection.Connection.write_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>An infinite loop that waits for user input and writes it to the socket.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Not used by ConnectionManager, since it blocks it should         only be run when the Connection is being used as a stand-alone program.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2016, Alex Kursell.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/Connection.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

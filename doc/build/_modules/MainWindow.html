@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>MainWindow &#8212; AlexChat 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">AlexChat Introduction</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Source Documentation</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for MainWindow</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">tkinter</span> <span class="k">as</span> <span class="nn">tk</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="k">import</span> <span class="n">ttk</span>
+
+<span class="kn">import</span> <span class="nn">CustomNotebook</span>
+<span class="kn">import</span> <span class="nn">ConversationTab</span>
+<span class="kn">import</span> <span class="nn">ConnectionManager</span>
+<span class="kn">import</span> <span class="nn">queue</span><span class="o">,</span> <span class="nn">sys</span>
+
+<div class="viewcode-block" id="MainWindow"><a class="viewcode-back" href="../MainWindow.html#MainWindow.MainWindow">[docs]</a><span class="k">class</span> <span class="nc">MainWindow</span><span class="p">(</span><span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    The root class in the application, contains all objects. Handles the basic</span>
+<span class="sd">    GUI layout, as well as passing messages between the network code (NetworkManager)</span>
+<span class="sd">    and the ConversationTabs where input is taken and output is displayed.</span>
+<span class="sd">    Inherits from tkinter.Frame.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        The class constructor for MainWindow. Sets up the basic structure of the window.</span>
+<span class="sd">        </span>
+<span class="sd">        :param master: The master is the basic tkinter window object (Tk.tk()).</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="n">master</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">wm_title</span><span class="p">(</span><span class="s2">&quot;AlexChat&quot;</span><span class="p">)</span>
+
+        <span class="c1">#Call self.on_close when the user clicks the &#39;X&#39; button on the window</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">protocol</span><span class="p">(</span><span class="s2">&quot;WM_DELETE_WINDOW&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_close</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tabs</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1">#id:Conversationtab(self, idOfTab)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">BOTH</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="c1">#Initialize basic GUI elements.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_widgets</span><span class="p">()</span>
+
+        <span class="c1">#ConnectionManager handles all network code in separate threads</span>
+        <span class="c1">#needed because tkinter methods cannot be called from any thread but the main one</span>
+        <span class="c1">#instead, functions and args are passed using the queue, and executed in main thread</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instructionQueue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">ConnectionManager</span><span class="o">.</span><span class="n">ConnectionManager</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructionQueue</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_loop</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MainWindow.create_widgets"><a class="viewcode-back" href="../MainWindow.html#MainWindow.MainWindow.create_widgets">[docs]</a>    <span class="k">def</span> <span class="nf">create_widgets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Method to initialize default GUI elements, namely the Notebook and the Overview tab.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1">#Tabbed view, each tab is a conversation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tabbed</span> <span class="o">=</span> <span class="n">CustomNotebook</span><span class="o">.</span><span class="n">CustomNotebook</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tabbed</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">BOTH</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1">#Overview tab shows connection data, is where you input your username</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tabs</span><span class="p">[</span><span class="s2">&quot;Overview&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ConversationTab</span><span class="o">.</span><span class="n">ConversationTab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Overview&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tabbed</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tabs</span><span class="p">[</span><span class="s2">&quot;Overview&quot;</span><span class="p">],</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Overview&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MainWindow.queue_loop"><a class="viewcode-back" href="../MainWindow.html#MainWindow.MainWindow.queue_loop">[docs]</a>    <span class="k">def</span> <span class="nf">queue_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A looping method to handle function calls passed from the network manager</span>
+<span class="sd">        via the instructionQueue. Repeats every 250ms. Used to placate tkinter&#39;s hatred of threads</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructionQueue</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructionQueue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="n">function</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="c1">#Executes specified function with specified args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">after</span><span class="p">(</span><span class="mi">250</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_loop</span><span class="p">)</span> <span class="c1">#Repeat function after specified number of milliseconds</span></div>
+
+<div class="viewcode-block" id="MainWindow.add_tab"><a class="viewcode-back" href="../MainWindow.html#MainWindow.MainWindow.add_tab">[docs]</a>    <span class="k">def</span> <span class="nf">add_tab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newId</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method that adds a tab with the given ID. The ID is also the title.</span>
+<span class="sd">        </span>
+<span class="sd">        :param str newId: The ID of the new tab</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tabs</span><span class="p">[</span><span class="n">newId</span><span class="p">]</span> <span class="o">=</span> <span class="n">ConversationTab</span><span class="o">.</span><span class="n">ConversationTab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newId</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tabbed</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tabs</span><span class="p">[</span><span class="n">newId</span><span class="p">],</span> <span class="n">text</span><span class="o">=</span><span class="n">newId</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MainWindow.text_received"><a class="viewcode-back" href="../MainWindow.html#MainWindow.MainWindow.text_received">[docs]</a>    <span class="k">def</span> <span class="nf">text_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thisId</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method to add a given string to the ConversationTab with the given ID.        </span>
+
+<span class="sd">        :param str thisId: The ID of the tab where the message should be sent.</span>
+<span class="sd">        :param str text: The text to be added to the tab. </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">thisId</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tabs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tabs</span><span class="p">[</span><span class="n">thisId</span><span class="p">]</span><span class="o">.</span><span class="n">text_received</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MainWindow.send_text"><a class="viewcode-back" href="../MainWindow.html#MainWindow.MainWindow.send_text">[docs]</a>    <span class="k">def</span> <span class="nf">send_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thisId</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method called by ConversationTabs to send the</span>
+<span class="sd">        given text to the NetworkManager to be sent.</span>
+<span class="sd">        </span>
+<span class="sd">        :param str thisId: The ID of the tab sending the message</span>
+<span class="sd">        :param str text: The text to be sent.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">new_write</span><span class="p">(</span><span class="n">thisId</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MainWindow.tab_closed"><a class="viewcode-back" href="../MainWindow.html#MainWindow.MainWindow.tab_closed">[docs]</a>    <span class="k">def</span> <span class="nf">tab_closed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tabId</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method called by the CustomNotebook when a tab is</span>
+<span class="sd">        closed by pressing the &#39;X&#39; button.</span>
+
+<span class="sd">        :param str tabId: The ID of the tab to be closed.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">delete_connection</span><span class="p">(</span><span class="n">tabId</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MainWindow.on_close"><a class="viewcode-back" href="../MainWindow.html#MainWindow.MainWindow.on_close">[docs]</a>    <span class="k">def</span> <span class="nf">on_close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method called when the root window is closed. Signals the</span>
+<span class="sd">        NetworkManager to close all connections, then closes the window.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">close_all</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div></div>
+           
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Tk</span><span class="p">()</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">MainWindow</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2016, Alex Kursell.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

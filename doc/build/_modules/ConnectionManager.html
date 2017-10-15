@@ -1,0 +1,547 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ConnectionManager &#8212; AlexChat 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">AlexChat Introduction</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Source Documentation</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ConnectionManager</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">sleep</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">queue</span>
+<span class="kn">from</span> <span class="nn">Connection</span> <span class="k">import</span> <span class="n">Connection</span>
+<span class="kn">from</span> <span class="nn">TCPSocket</span> <span class="k">import</span> <span class="n">TCPSocket</span>
+<span class="kn">from</span> <span class="nn">UDPSocket</span> <span class="k">import</span> <span class="n">UDPSocket</span>
+<span class="kn">from</span> <span class="nn">AddressBook</span> <span class="k">import</span> <span class="n">AddressBook</span>
+
+
+<div class="viewcode-block" id="ConnectionManager"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager">[docs]</a><span class="k">class</span> <span class="nc">ConnectionManager</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    The class that creates and manages all network Connections.</span>
+<span class="sd">    Handles message routing reading and writing to MainWindow,</span>
+<span class="sd">    user command handling, creating, listening for, and closing connections,</span>
+<span class="sd">    storing usernames and ip addresses.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">guiQueue</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        The class constructor for ConnectionManager. Sets up socket server,</span>
+<span class="sd">        broadcasting, and runs session_setup</span>
+<span class="sd">        </span>
+<span class="sd">        :param MainWindow master: The master is the MainWindow object to send and receive messages with.</span>
+<span class="sd">        :param Queue guiQueue: The queue to write commands for the GUI code to.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">guiQueue</span> <span class="o">=</span> <span class="n">guiQueue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="n">master</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hostname</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="mi">1298</span> <span class="c1">#TCP and UDP server port.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">userList</span> <span class="o">=</span> <span class="n">AddressBook</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">helpString</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;Available commands:</span>
+<span class="s1">            /help - Displays help information.</span>
+<span class="s1">            /ip - Displays ip address of this computer.</span>
+<span class="s1">            /join &lt;username or ip&gt; - Connects to specified username or ip.</span>
+<span class="s1">            /list - Shows a list of available users.</span>
+<span class="s1">            /quit - Ends current chat.</span>
+<span class="s1">            &#39;&#39;&#39;</span>
+        
+        <span class="c1">#Create socket to listen for incoming connections</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serverSocket</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serverSocket</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serverSocket</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+        <span class="c1">#Open broadcast socket and start listening.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="s2">&quot;Broadcast&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;Broadcast&quot;</span><span class="p">,</span>
+                                                   <span class="n">UDPSocket</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">),</span>
+                                                   <span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="s2">&quot;Broadcast&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">start_listening</span><span class="p">()</span>
+
+        <span class="c1">#Begin session setup</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">listenerThread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_setup</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">listenerThread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ConnectionManager.get_hostname"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.get_hostname">[docs]</a>    <span class="k">def</span> <span class="nf">get_hostname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method that returns the ip address of the computer.</span>
+<span class="sd">        Works by creating a temporary UDP connection to Google (but since it&#39;s UDP</span>
+<span class="sd">        it won&#39;t actually send anything), then reading the IP of the connection.</span>
+
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_DGRAM</span><span class="p">)</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="s1">&#39;8.8.8.8&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="c1">#Dosen&#39;t have to be reachable.</span>
+        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">getsockname</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ConnectionManager.session_setup"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.session_setup">[docs]</a>    <span class="k">def</span> <span class="nf">session_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method called by the constructor that prompts for a username,</span>
+<span class="sd">        then once one is entered, calls listen_for_connections to</span>
+<span class="sd">        start accepting connections.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Getting all users on network...&quot;</span><span class="p">)</span>
+
+        <span class="c1">#Send /REQUEST signal to get list of usernames</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="s2">&quot;Broadcast&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;/REQUEST &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+        <span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Done.&quot;</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Enter a username, no periods or spaces:&quot;</span><span class="p">)</span>
+
+            <span class="c1">#Wait for username to be input.</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">sleep</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Checking for username conflicts...&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">userList</span><span class="o">.</span><span class="n">byName</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;No username conflict detected.&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Username conflict detected. Choose another name:&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        
+        <span class="c1">#Announce username to the world.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="s2">&quot;Broadcast&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;/USRADD &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+        
+        <span class="c1">#Display welcome messages.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Welcome, &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Type &#39;/help&#39; for a list of available commands.&quot;</span><span class="p">)</span>
+
+        <span class="c1">#Add my new username to the directory.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">userList</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span>
+
+        <span class="c1">#Open a tab to display output of the Broadcast socket</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">guiQueue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">add_tab</span><span class="p">,</span> <span class="s2">&quot;Broadcast&quot;</span><span class="p">))</span>
+
+        <span class="c1">#Listen for incoming connections</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">listen_for_connections</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ConnectionManager.do_handshake"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.do_handshake">[docs]</a>    <span class="k">def</span> <span class="nf">do_handshake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newConnection</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method called when a new connection (outbound</span>
+<span class="sd">        or inbound) is being created. Sends a &#39;/HANDSHAKE&#39; command</span>
+<span class="sd">        followed by the username of this computer, then waits for</span>
+<span class="sd">        and returns the username of the new client.</span>
+
+<span class="sd">        :param Connection newConnection: The new connection to perform the handshake on.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">newConnection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;/HANDSHAKE &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">newConnection</span><span class="o">.</span><span class="n">receive</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">newConnection</span><span class="o">.</span><span class="n">set_id</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/HANDSHAKE&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+        
+<div class="viewcode-block" id="ConnectionManager.listen_for_connections"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.listen_for_connections">[docs]</a>    <span class="k">def</span> <span class="nf">listen_for_connections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method containing an infinite loop that listens for</span>
+<span class="sd">        incoming socket connections. When one is detected, it creates a new</span>
+<span class="sd">        Connection, performs the handshake, and then adds the Connection and</span>
+<span class="sd">        creates a new GUI tab for the chat.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Listening for connections...&#39;</span><span class="p">)</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1">#Accept a new incoming connection</span>
+                <span class="p">(</span><span class="n">clientsocket</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serverSocket</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="c1">#Program is being shut down, end loop</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;New incoming connection from </span><span class="si">%s</span><span class="s1">:</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">address</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">address</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+            <span class="c1">#Create a new TCPSocket and Connection object with the returned socket</span>
+            <span class="n">newConnection</span> <span class="o">=</span> <span class="n">Connection</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">TCPSocket</span><span class="p">(</span><span class="n">clientsocket</span><span class="p">),</span> <span class="bp">self</span><span class="p">)</span>
+
+            <span class="c1">#Get the nickname of the other person.</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">nickname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_handshake</span><span class="p">(</span><span class="n">newConnection</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Incoming connection add failed.&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">nickname</span><span class="p">]</span> <span class="o">=</span> <span class="n">newConnection</span>
+
+            <span class="c1">#Start listening through the connection</span>
+            <span class="n">newConnection</span><span class="o">.</span><span class="n">start_listening</span><span class="p">()</span>
+
+            <span class="c1">#Add a tab to the GUI</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">guiQueue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">add_tab</span><span class="p">,</span> <span class="n">nickname</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%i</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">) connected.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">address</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">address</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">nickname</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ConnectionManager.add_connection"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.add_connection">[docs]</a>    <span class="k">def</span> <span class="nf">add_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">logId</span><span class="o">=</span><span class="s2">&quot;Overview&quot;</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method that connects with the given host on the given port.</span>
+<span class="sd">        It creates a new Connection, performs the handshake, then adds the Connection</span>
+<span class="sd">        and creates a new GUI tab.</span>
+<span class="sd">        </span>
+<span class="sd">        :param str ip: The ipv4 address or username of the computer to connect to.</span>
+<span class="sd">        :param int port: The port to try connecting to.</span>
+<span class="sd">        :param str logId: The default tab to log status of connection add to.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Attempting to add connection with &quot;</span> <span class="o">+</span> <span class="n">ip</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="n">logId</span><span class="p">)</span>
+        
+        <span class="c1">#Prevent creation of duplicate connections</span>
+        <span class="k">if</span> <span class="n">ip</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Connection already exists.&quot;</span><span class="p">,</span> <span class="n">logId</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+
+        <span class="k">if</span> <span class="s2">&quot;.&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ip</span><span class="p">:</span> <span class="c1">#Without a dot assume ip is a username</span>
+            <span class="k">if</span> <span class="n">ip</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">userList</span><span class="o">.</span><span class="n">byName</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">ip</span>
+                <span class="n">ip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">userList</span><span class="o">.</span><span class="n">byName</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> found at </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">ip</span><span class="p">),</span> <span class="n">logId</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> is not a known user or correctly formatted IP address, please try again.&quot;</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="n">ip</span><span class="p">),</span> <span class="n">logId</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">ip</span>
+            
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Adding new connection with </span><span class="si">%s</span><span class="s2">:</span><span class="si">%i</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">),</span> <span class="n">logId</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">newConnection</span> <span class="o">=</span> <span class="n">Connection</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">TCPSocket</span><span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">),</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_handshake</span><span class="p">(</span><span class="n">newConnection</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Connection open failed.&quot;</span><span class="p">,</span> <span class="n">logId</span><span class="p">)</span>
+            <span class="k">return</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">newConnection</span>
+        <span class="n">newConnection</span><span class="o">.</span><span class="n">start_listening</span><span class="p">()</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">guiQueue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">add_tab</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%i</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">) connected.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">logId</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="ConnectionManager.receive_command"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.receive_command">[docs]</a>    <span class="k">def</span> <span class="nf">receive_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thisId</span><span class="p">,</span> <span class="n">commands</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method used to switch commands sent through a Connection by the other party.</span>
+<span class="sd">        </span>
+<span class="sd">        :param str thisId: The ID of the Connection that receives the command.</span>
+<span class="sd">        :param tuple commands: A tuple containing the received command and \</span>
+<span class="sd">        the other party&#39;s IP address.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">ip</span> <span class="o">=</span> <span class="n">commands</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">commands</span> <span class="o">=</span> <span class="n">commands</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        
+        <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">):</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+            <span class="c1">#Sent by new users and by all users whenever</span>
+            <span class="c1">#a new user starts the program</span>
+            <span class="k">if</span> <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/USRADD&quot;</span><span class="p">:</span>
+                <span class="c1">#If the new username is the same as this one, send a</span>
+                <span class="c1">#NAMECONFLICT, otherwise, add the user.</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">==</span> <span class="n">command</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="s2">&quot;Broadcast&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;/NAMECONFLICT &quot;</span>
+                                                      <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add_user</span><span class="p">((</span><span class="n">command</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ip</span><span class="p">))</span>
+
+            <span class="c1">#A smiple request for all users on the network to send their names</span>
+            <span class="k">elif</span> <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/REQUEST&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="s2">&quot;Broadcast&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;/USRADD &quot;</span>
+                                                        <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+                
+            <span class="c1">#If this is recieved, the chosen name is conflicted, so remove it.</span>
+            <span class="k">elif</span> <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/NAMECONFLICT&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">command</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add_user</span><span class="p">((</span><span class="n">command</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ip</span><span class="p">))</span>
+                
+            <span class="c1">#Sent whenever a user ends a chat or goes offline. In the first case,</span>
+            <span class="c1">#end the chat on this end, in the second, delete the user from memory.</span>
+            <span class="k">elif</span> <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/DISCONNECT&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">thisId</span> <span class="o">!=</span> <span class="s2">&quot;Broadcast&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Connection with </span><span class="si">%s</span><span class="s2"> closed by partner.&quot;</span> <span class="o">%</span> <span class="n">thisId</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Connection closed by partner.&quot;</span><span class="p">,</span> <span class="n">thisId</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">delete_connection</span><span class="p">(</span><span class="n">thisId</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">delete_user</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span></div>
+                    
+<div class="viewcode-block" id="ConnectionManager.handle_command"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.handle_command">[docs]</a>    <span class="k">def</span> <span class="nf">handle_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thisId</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method used to switch commands typed into the GUI by the user.</span>
+<span class="sd">        A command is preceded by a forward slash &#39;/&#39;.</span>
+<span class="sd">        </span>
+<span class="sd">        :param str thisId: The ID of the tab that sent the command.</span>
+<span class="sd">        :param str command: The text of the command.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">command</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="c1">#/quit command quits the current chat</span>
+        <span class="k">if</span> <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/quit&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">thisId</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Broadcast&quot;</span><span class="p">,</span> <span class="s2">&quot;Overview&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;The </span><span class="si">%s</span><span class="s2"> tab is always open.&quot;</span> <span class="o">%</span> <span class="n">thisId</span><span class="p">,</span> <span class="n">thisId</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">thisId</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">delete_connection</span><span class="p">(</span><span class="n">thisId</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Connection with </span><span class="si">%s</span><span class="s2"> closed.&quot;</span> <span class="o">%</span> <span class="n">thisId</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Connection closed.&quot;</span><span class="p">,</span> <span class="n">thisId</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Connection already closed.&quot;</span><span class="p">,</span> <span class="n">thisId</span><span class="p">)</span>
+
+        <span class="c1">#Try to add connection to specified user</span>
+        <span class="k">elif</span> <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/join&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">command</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;No username or IP specified.&quot;</span><span class="p">,</span> <span class="n">thisId</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">command</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;You can&#39;t chat with yourself!&quot;</span><span class="p">,</span> <span class="n">thisId</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_connection</span><span class="p">(</span><span class="n">command</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">thisId</span><span class="p">)</span>
+       
+        <span class="c1">#Display the help string.</span>
+        <span class="k">elif</span> <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/help&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">helpString</span><span class="p">,</span> <span class="n">thisId</span><span class="p">)</span>
+
+        <span class="c1">#Display my ip</span>
+        <span class="k">elif</span> <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/ip&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Your IP address is &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">),</span> <span class="n">thisId</span><span class="p">)</span>
+
+        <span class="c1">#Display a list of all known users</span>
+        <span class="k">elif</span> <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/list&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Users:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[(</span><span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="mi">12</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{:17}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>\
+                 <span class="k">for</span> <span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">userList</span><span class="o">.</span><span class="n">items</span><span class="p">()]),</span> <span class="n">thisId</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Command not found.&quot;</span><span class="p">,</span> <span class="n">thisId</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConnectionManager.add_user"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.add_user">[docs]</a>    <span class="k">def</span> <span class="nf">add_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method that adds the given user to memory</span>
+<span class="sd">        (or updates an existing user).</span>
+
+<span class="sd">        :param items: The username and IP, format (username, ip).</span>
+<span class="sd">        :type items: tuple or list</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">userList</span><span class="p">[</span><span class="n">items</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ConnectionManager.delete_user"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.delete_user">[docs]</a>    <span class="k">def</span> <span class="nf">delete_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method that deletes the user entry for the user with</span>
+<span class="sd">        a given IP address.</span>
+<span class="sd">        </span>
+<span class="sd">        :param str ip: The IP address of the user to be deleted.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">userList</span><span class="p">[</span><span class="n">ip</span><span class="p">]</span></div>
+        
+<div class="viewcode-block" id="ConnectionManager.delete_connection"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.delete_connection">[docs]</a>    <span class="k">def</span> <span class="nf">delete_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thisId</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method that closes and deletes the Connection with the</span>
+<span class="sd">        given ID.</span>
+<span class="sd">        </span>
+<span class="sd">        :param str thisId: The ID of the Connection to be closed.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1">#Send a DISCONNECT then close connection and delete from memory.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">thisId</span><span class="p">]</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;/DISCONNECT &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Connection with </span><span class="si">%s</span><span class="s2"> closed.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">thisId</span><span class="p">))</span>
+        
+            <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">thisId</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">thisId</span><span class="p">]</span>
+
+        <span class="c1">#This procedure can throw a lot of errors under different circumstances</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">except</span> <span class="ne">ConnectionResetError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">except</span> <span class="ne">ConnectionAbortedError</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+        
+<div class="viewcode-block" id="ConnectionManager.new_read"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.new_read">[docs]</a>    <span class="k">def</span> <span class="nf">new_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thisId</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method called by a Connection to when a message is received. If message is a command</span>
+<span class="sd">        (starts with &#39;/&#39;), it calls the command handler, otherwise it displays</span>
+<span class="sd">        the text of the message with a tag containing either the username</span>
+<span class="sd">        associated with the client IP, or just with the client IP (if for some reason</span>
+<span class="sd">        no username is available).</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        :param str thisId: The ID of the tab to display the message on.</span>
+<span class="sd">        :param tuple msg: The text of the message and the IP of the sender, format (text, ip).</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1">#&#39;/&#39; denotes a command to be handled</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">receive_command</span><span class="p">(</span><span class="n">thisId</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#Replace the IP address sent by the Connection with the username</span>
+            <span class="c1">#stored for that address. Display message.</span>
+            <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">userList</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">guiQueue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">text_received</span><span class="p">,</span> <span class="n">thisId</span><span class="p">,</span>
+                                   <span class="s2">&quot;&lt;&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">userList</span><span class="p">[</span><span class="n">msg</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="s2">&quot;&gt;: &quot;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">guiQueue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">text_received</span><span class="p">,</span> <span class="n">thisId</span><span class="p">,</span>
+                                   <span class="s2">&quot;&lt;&quot;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;&gt;: &quot;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span></div>
+            
+<div class="viewcode-block" id="ConnectionManager.new_write"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.new_write">[docs]</a>    <span class="k">def</span> <span class="nf">new_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thisId</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method called by the MainWindow when a new message needs to be sent</span>
+<span class="sd">        (or a command is entered). This method switches commands and messages and</span>
+<span class="sd">        does the appropriate thing for each.</span>
+<span class="sd">        </span>
+<span class="sd">        :param str thisId: The ID of the tab that sent the message (as well as of the Connection)</span>
+<span class="sd">        :param str msg: The message to be sent, or command to be executed.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1">#Empty means no username, program is in setup, entered command is actually username</span>
+        <span class="c1">#that the user wants to select.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot; &quot;</span> <span class="ow">in</span> <span class="n">msg</span> <span class="ow">or</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">msg</span> <span class="ow">or</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Sorry, no periods, slashes, or spaces allowed. Enter another username.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">16</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Maximum username length (16) exceeded. Enter another username.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">msg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">userList</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Sorry, this username is already in use. Enter another username.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">msg</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;me&quot;</span><span class="p">,</span> <span class="s2">&quot;system&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Think we&#39;re clever, do we? Try again buddy.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="n">msg</span>
+
+
+        <span class="k">elif</span> <span class="n">msg</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handle_command</span><span class="p">(</span><span class="n">thisId</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Message too long. Maximum size is 1000 characters.&quot;</span><span class="p">,</span> <span class="n">thisId</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">thisId</span> <span class="o">==</span> <span class="s2">&quot;Overview&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handle_command</span><span class="p">(</span><span class="n">thisId</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">thisId</span><span class="p">]</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;&lt;me&gt;: &quot;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">,</span> <span class="n">thisId</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ConnectionManager.close_all"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.close_all">[docs]</a>    <span class="k">def</span> <span class="nf">close_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method that closes and deletes every connection.</span>
+<span class="sd">        Called on program shutdown. Does not use delete_connection</span>
+<span class="sd">        method because a pause is required between sending the signal</span>
+<span class="sd">        and closing the socket, so it is more efficient to sent all signals, wait,</span>
+<span class="sd">        then close all sockets.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">serverSocket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">idList</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="c1">#Send DISCONNECT to every connection</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">idList</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;/DISCONNECT &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+        <span class="c1">#Close every connection</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">idList</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="ConnectionManager.log"><a class="viewcode-back" href="../ConnectionManager.html#ConnectionManager.ConnectionManager.log">[docs]</a>    <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">tabId</span><span class="o">=</span><span class="s2">&quot;Overview&quot;</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method that writes text to the specified tab, without appending a username</span>
+<span class="sd">        or ip. Default tab to write logging data to is Overview.</span>
+<span class="sd">        </span>
+<span class="sd">        :param str msg: The text of the message to be displayed.</span>
+<span class="sd">        :param str tabId: The ID of the tab that will display the message.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">guiQueue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">text_received</span><span class="p">,</span> <span class="n">tabId</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2016, Alex Kursell.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

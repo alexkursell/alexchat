@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Connection &#8212; AlexChat 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">AlexChat Introduction</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Source Documentation</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for Connection</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">sleep</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<div class="viewcode-block" id="Connection"><a class="viewcode-back" href="../Connection.html#Connection.Connection">[docs]</a><span class="k">class</span> <span class="nc">Connection</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class provides a convenient layer between the NetworkManager</span>
+<span class="sd">    and a socket object (either UDPSocket or TCPSocket), allowing messages</span>
+<span class="sd">    from the socket to be read and sent to the proper method of the ConnectionManager class.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">myId</span><span class="p">,</span> <span class="n">sock</span><span class="p">,</span> <span class="n">master</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        The constructor for Connection. Stores some basic</span>
+<span class="sd">        information including the socket object and the ID.</span>
+<span class="sd">        </span>
+<span class="sd">        :param str myId: The ID of this connection.</span>
+<span class="sd">        :param sock: The socket object to be used.</span>
+<span class="sd">        :param master: The ConnectionManager who&#39;s methods should be called.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">myId</span> <span class="o">=</span> <span class="n">myId</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span> <span class="o">=</span> <span class="n">sock</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="n">master</span>
+
+<div class="viewcode-block" id="Connection.start_listening"><a class="viewcode-back" href="../Connection.html#Connection.Connection.start_listening">[docs]</a>    <span class="k">def</span> <span class="nf">start_listening</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Create and start a thread to continuously read for input</span>
+<span class="sd">        from the socket.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">receiverThread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">read_loop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">receiverThread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Connection.read_loop"><a class="viewcode-back" href="../Connection.html#Connection.Connection.read_loop">[docs]</a>    <span class="k">def</span> <span class="nf">read_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Contains an infinite loop that waits for input from the socket</span>
+<span class="sd">        and passes it to the new_read method in the ConnectionManager.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1">#The &#39;with&#39; statement automatically calls the __enter__ method when</span>
+        <span class="c1">#entering the block, and calls the __exit__ method when exiting the block</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="p">:</span>
+            <span class="c1">#By adding the __iter__ and __next__ methods to MySocket, it becomes</span>
+            <span class="c1">#iterable, where each iteration returns the next message received, and</span>
+            <span class="c1">#if there is none, waits until it becomes available.</span>
+            <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">new_read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myId</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+        <span class="c1">#Socket has died or closed, announce that it has closed, and end reading.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">new_read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myId</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;CONNECTION CLOSED&quot;</span><span class="p">,</span> <span class="s2">&quot;SYSTEM&quot;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Connection.write_loop"><a class="viewcode-back" href="../Connection.html#Connection.Connection.write_loop">[docs]</a>    <span class="k">def</span> <span class="nf">write_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        An infinite loop that waits for user input and writes it to the socket.</span>
+
+<span class="sd">        .. warning:: Not used by ConnectionManager, since it blocks it should \</span>
+<span class="sd">        only be run when the Connection is being used as a stand-alone program.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="nb">input</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Connection.send"><a class="viewcode-back" href="../Connection.html#Connection.Connection.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method that sends a message through the socket.</span>
+<span class="sd">        </span>
+<span class="sd">        :param str msg: The message to be sent.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Connection.receive"><a class="viewcode-back" href="../Connection.html#Connection.Connection.receive">[docs]</a>    <span class="k">def</span> <span class="nf">receive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method that waits untill it receives a message</span>
+<span class="sd">        from the socket, then returns that message, as well as the senders IP.</span>
+<span class="sd">        </span>
+<span class="sd">        :rtype: tuple</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">receive</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Connection.close"><a class="viewcode-back" href="../Connection.html#Connection.Connection.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method that closes the socket.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Connection.set_id"><a class="viewcode-back" href="../Connection.html#Connection.Connection.set_id">[docs]</a>    <span class="k">def</span> <span class="nf">set_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newId</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method that sets the ID of the socket. It often needs to be changed</span>
+<span class="sd">        once a username is received (as the ID is the connected username).</span>
+<span class="sd">        </span>
+<span class="sd">        :param str newId: The new ID.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">myId</span> <span class="o">=</span> <span class="n">newId</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">,</span> <span class="n">UDPSocket</span><span class="p">(</span><span class="mi">1298</span><span class="p">))</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">start_listening</span><span class="p">()</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">write_loop</span><span class="p">()</span>
+            
+            
+        
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2016, Alex Kursell.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

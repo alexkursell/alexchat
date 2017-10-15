@@ -1,0 +1,347 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ConnectionManager module &#8212; AlexChat 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ConversationTab module" href="ConversationTab.html" />
+    <link rel="prev" title="Connection module" href="Connection.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">AlexChat Introduction</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Source Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="AddressBook.html">AddressBook module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Connection.html">Connection module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ConnectionManager module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ConversationTab.html">ConversationTab module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CustomNotebook.html">CustomNotebook module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MainWindow.html">MainWindow module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MySocket.html">MySocket module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TCPSocket.html">TCPSocket module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="UDPSocket.html">UDPSocket module</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/ConnectionManager.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-ConnectionManager">
+<span id="connectionmanager-module"></span><h1>ConnectionManager module<a class="headerlink" href="#module-ConnectionManager" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="ConnectionManager.ConnectionManager">
+<em class="property">class </em><code class="descclassname">ConnectionManager.</code><code class="descname">ConnectionManager</code><span class="sig-paren">(</span><em>master</em>, <em>guiQueue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>The class that creates and manages all network Connections.
+Handles message routing reading and writing to MainWindow,
+user command handling, creating, listening for, and closing connections,
+storing usernames and ip addresses.</p>
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.add_connection">
+<code class="descname">add_connection</code><span class="sig-paren">(</span><em>ip</em>, <em>logId='Overview'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.add_connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.add_connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method that connects with the given host on the given port.
+It creates a new Connection, performs the handshake, then adds the Connection
+and creates a new GUI tab.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ip</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The ipv4 address or username of the computer to connect to.</li>
+<li><strong>port</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The port to try connecting to.</li>
+<li><strong>logId</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The default tab to log status of connection add to.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.add_user">
+<code class="descname">add_user</code><span class="sig-paren">(</span><em>items</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.add_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.add_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method that adds the given user to memory
+(or updates an existing user).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>items</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#tuple" title="(in Python v2.7)"><em>tuple</em></a><em> or </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; The username and IP, format (username, ip).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.close_all">
+<code class="descname">close_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.close_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.close_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method that closes and deletes every connection.
+Called on program shutdown. Does not use delete_connection
+method because a pause is required between sending the signal
+and closing the socket, so it is more efficient to sent all signals, wait,
+then close all sockets.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.delete_connection">
+<code class="descname">delete_connection</code><span class="sig-paren">(</span><em>thisId</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.delete_connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.delete_connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method that closes and deletes the Connection with the
+given ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thisId</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The ID of the Connection to be closed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.delete_user">
+<code class="descname">delete_user</code><span class="sig-paren">(</span><em>ip</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.delete_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.delete_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method that deletes the user entry for the user with
+a given IP address.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ip</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The IP address of the user to be deleted.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.do_handshake">
+<code class="descname">do_handshake</code><span class="sig-paren">(</span><em>newConnection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.do_handshake"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.do_handshake" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method called when a new connection (outbound
+or inbound) is being created. Sends a &#8216;/HANDSHAKE&#8217; command
+followed by the username of this computer, then waits for
+and returns the username of the new client.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>newConnection</strong> (<a class="reference internal" href="Connection.html#module-Connection" title="Connection"><em>Connection</em></a>) &#8211; The new connection to perform the handshake on.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.get_hostname">
+<code class="descname">get_hostname</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.get_hostname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.get_hostname" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method that returns the ip address of the computer.
+Works by creating a temporary UDP connection to Google (but since it&#8217;s UDP
+it won&#8217;t actually send anything), then reading the IP of the connection.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.handle_command">
+<code class="descname">handle_command</code><span class="sig-paren">(</span><em>thisId</em>, <em>command</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.handle_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.handle_command" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method used to switch commands typed into the GUI by the user.
+A command is preceded by a forward slash &#8216;/&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>thisId</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The ID of the tab that sent the command.</li>
+<li><strong>command</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The text of the command.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.listen_for_connections">
+<code class="descname">listen_for_connections</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.listen_for_connections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.listen_for_connections" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method containing an infinite loop that listens for
+incoming socket connections. When one is detected, it creates a new
+Connection, performs the handshake, and then adds the Connection and
+creates a new GUI tab for the chat.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.log">
+<code class="descname">log</code><span class="sig-paren">(</span><em>msg</em>, <em>tabId='Overview'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method that writes text to the specified tab, without appending a username
+or ip. Default tab to write logging data to is Overview.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>msg</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The text of the message to be displayed.</li>
+<li><strong>tabId</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The ID of the tab that will display the message.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.new_read">
+<code class="descname">new_read</code><span class="sig-paren">(</span><em>thisId</em>, <em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.new_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.new_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method called by a Connection to when a message is received. If message is a command
+(starts with &#8216;/&#8217;), it calls the command handler, otherwise it displays
+the text of the message with a tag containing either the username
+associated with the client IP, or just with the client IP (if for some reason
+no username is available).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>thisId</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The ID of the tab to display the message on.</li>
+<li><strong>msg</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#tuple" title="(in Python v2.7)"><em>tuple</em></a>) &#8211; The text of the message and the IP of the sender, format (text, ip).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.new_write">
+<code class="descname">new_write</code><span class="sig-paren">(</span><em>thisId</em>, <em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.new_write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.new_write" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method called by the MainWindow when a new message needs to be sent
+(or a command is entered). This method switches commands and messages and
+does the appropriate thing for each.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>thisId</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The ID of the tab that sent the message (as well as of the Connection)</li>
+<li><strong>msg</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The message to be sent, or command to be executed.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.receive_command">
+<code class="descname">receive_command</code><span class="sig-paren">(</span><em>thisId</em>, <em>commands</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.receive_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.receive_command" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method used to switch commands sent through a Connection by the other party.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>thisId</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The ID of the Connection that receives the command.</li>
+<li><strong>commands</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#tuple" title="(in Python v2.7)"><em>tuple</em></a>) &#8211; A tuple containing the received command and         the other party&#8217;s IP address.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ConnectionManager.ConnectionManager.session_setup">
+<code class="descname">session_setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConnectionManager.html#ConnectionManager.session_setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConnectionManager.ConnectionManager.session_setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method called by the constructor that prompts for a username,
+then once one is entered, calls listen_for_connections to
+start accepting connections.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2016, Alex Kursell.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/ConnectionManager.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

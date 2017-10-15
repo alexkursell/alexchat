@@ -1,0 +1,204 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>CustomNotebook &#8212; AlexChat 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">AlexChat Introduction</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Source Documentation</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for CustomNotebook</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">tkinter</span> <span class="k">as</span> <span class="nn">tk</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="k">import</span> <span class="n">ttk</span>
+
+
+<div class="viewcode-block" id="CustomNotebook"><a class="viewcode-back" href="../CustomNotebook.html#CustomNotebook.CustomNotebook">[docs]</a><span class="k">class</span> <span class="nc">CustomNotebook</span><span class="p">(</span><span class="n">ttk</span><span class="o">.</span><span class="n">Notebook</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    A ttk Notebook with close buttons on each tab.</span>
+<span class="sd">    Written by Bryan Oakley, found at http://stackoverflow.com/a/39459376,</span>
+<span class="sd">    and modified so that the first two tabs cannot be closed.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">__initialized</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__initialized</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__initialize_custom_style</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__inititialized</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;style&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;CustomNotebook&quot;</span>
+        <span class="n">ttk</span><span class="o">.</span><span class="n">Notebook</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_master</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s2">&quot;&lt;ButtonPress-1&gt;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_close_press</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s2">&quot;&lt;ButtonRelease-1&gt;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_close_release</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CustomNotebook.on_close_press"><a class="viewcode-back" href="../CustomNotebook.html#CustomNotebook.CustomNotebook.on_close_press">[docs]</a>    <span class="k">def</span> <span class="nf">on_close_press</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called when the button is pressed over the close button&quot;&quot;&quot;</span>
+
+        <span class="n">element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identify</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;close&quot;</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;@</span><span class="si">%d</span><span class="s2">,</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">([</span><span class="s1">&#39;pressed&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="n">index</span></div>
+
+<div class="viewcode-block" id="CustomNotebook.on_close_release"><a class="viewcode-back" href="../CustomNotebook.html#CustomNotebook.CustomNotebook.on_close_release">[docs]</a>    <span class="k">def</span> <span class="nf">on_close_release</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called when the button is released over the close button&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">instate</span><span class="p">([</span><span class="s1">&#39;pressed&#39;</span><span class="p">]):</span>
+            <span class="k">return</span>
+
+        <span class="n">element</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">identify</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;@</span><span class="si">%d</span><span class="s2">,</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
+
+        <span class="c1">#Edited to prevent deletion of first 2 tabs</span>
+        <span class="c1">#Overview and Broadcast</span>
+        <span class="k">if</span> <span class="s2">&quot;close&quot;</span> <span class="ow">in</span> <span class="n">element</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">==</span> <span class="n">index</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1">#Added to notify MainWindow of tab close</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">tab_closed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tab</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_active</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> 
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">forget</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">event_generate</span><span class="p">(</span><span class="s2">&quot;&lt;&lt;NotebookTabClosed&gt;&gt;&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">([</span><span class="s2">&quot;!pressed&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="sd">&#39;&#39;&#39;def add(self, tab, text=&quot;Dafault text&quot;, isCloseable=True):</span>
+<span class="sd">        if not isClosable:</span>
+<span class="sd">            self.nonClosable.append()&#39;&#39;&#39;</span>
+        
+
+    <span class="k">def</span> <span class="nf">__initialize_custom_style</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Style</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">images</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">tk</span><span class="o">.</span><span class="n">PhotoImage</span><span class="p">(</span><span class="s2">&quot;img_close&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">                R0lGODlhCAAIAMIBAAAAADs7O4+Pj9nZ2Ts7Ozs7Ozs7Ozs7OyH+EUNyZWF0ZWQg</span>
+<span class="s1">                d2l0aCBHSU1QACH5BAEKAAQALAAAAAAIAAgAAAMVGDBEA0qNJyGw7AmxmuaZhWEU</span>
+<span class="s1">                5kEJADs=</span>
+<span class="s1">                &#39;&#39;&#39;</span><span class="p">),</span>
+            <span class="n">tk</span><span class="o">.</span><span class="n">PhotoImage</span><span class="p">(</span><span class="s2">&quot;img_closeactive&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">                R0lGODlhCAAIAMIEAAAAAP/SAP/bNNnZ2cbGxsbGxsbGxsbGxiH5BAEKAAQALAAA</span>
+<span class="s1">                AAAIAAgAAAMVGDBEA0qNJyGw7AmxmuaZhWEU5kEJADs=</span>
+<span class="s1">                &#39;&#39;&#39;</span><span class="p">),</span>
+            <span class="n">tk</span><span class="o">.</span><span class="n">PhotoImage</span><span class="p">(</span><span class="s2">&quot;img_closepressed&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">                R0lGODlhCAAIAMIEAAAAAOUqKv9mZtnZ2Ts7Ozs7Ozs7Ozs7OyH+EUNyZWF0ZWQg</span>
+<span class="s1">                d2l0aCBHSU1QACH5BAEKAAQALAAAAAAIAAgAAAMVGDBEA0qNJyGw7AmxmuaZhWEU</span>
+<span class="s1">                5kEJADs=</span>
+<span class="s1">            &#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">style</span><span class="o">.</span><span class="n">element_create</span><span class="p">(</span><span class="s2">&quot;close&quot;</span><span class="p">,</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span> <span class="s2">&quot;img_close&quot;</span><span class="p">,</span>
+                            <span class="p">(</span><span class="s2">&quot;active&quot;</span><span class="p">,</span> <span class="s2">&quot;pressed&quot;</span><span class="p">,</span> <span class="s2">&quot;!disabled&quot;</span><span class="p">,</span> <span class="s2">&quot;img_closepressed&quot;</span><span class="p">),</span>
+                            <span class="p">(</span><span class="s2">&quot;active&quot;</span><span class="p">,</span> <span class="s2">&quot;!disabled&quot;</span><span class="p">,</span> <span class="s2">&quot;img_closeactive&quot;</span><span class="p">),</span> <span class="n">border</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">layout</span><span class="p">(</span><span class="s2">&quot;CustomNotebook&quot;</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;CustomNotebook.client&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;sticky&quot;</span><span class="p">:</span> <span class="s2">&quot;nswe&quot;</span><span class="p">})])</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">layout</span><span class="p">(</span><span class="s2">&quot;CustomNotebook.Tab&quot;</span><span class="p">,</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s2">&quot;CustomNotebook.tab&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s2">&quot;sticky&quot;</span><span class="p">:</span> <span class="s2">&quot;nswe&quot;</span><span class="p">,</span> 
+                <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">(</span><span class="s2">&quot;CustomNotebook.padding&quot;</span><span class="p">,</span> <span class="p">{</span>
+                        <span class="s2">&quot;side&quot;</span><span class="p">:</span> <span class="s2">&quot;top&quot;</span><span class="p">,</span> 
+                        <span class="s2">&quot;sticky&quot;</span><span class="p">:</span> <span class="s2">&quot;nswe&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[</span>
+                            <span class="p">(</span><span class="s2">&quot;CustomNotebook.focus&quot;</span><span class="p">,</span> <span class="p">{</span>
+                                <span class="s2">&quot;side&quot;</span><span class="p">:</span> <span class="s2">&quot;top&quot;</span><span class="p">,</span> 
+                                <span class="s2">&quot;sticky&quot;</span><span class="p">:</span> <span class="s2">&quot;nswe&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[</span>
+                                    <span class="p">(</span><span class="s2">&quot;CustomNotebook.label&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;side&quot;</span><span class="p">:</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;sticky&quot;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}),</span>
+                                    <span class="p">(</span><span class="s2">&quot;CustomNotebook.close&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;side&quot;</span><span class="p">:</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;sticky&quot;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}),</span>
+                                <span class="p">]</span>
+                        <span class="p">})</span>
+                    <span class="p">]</span>
+                <span class="p">})</span>
+            <span class="p">]</span>
+        <span class="p">})</span>
+    <span class="p">])</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Tk</span><span class="p">()</span>
+
+    <span class="n">notebook</span> <span class="o">=</span> <span class="n">CustomNotebook</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+    <span class="n">notebook</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">side</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">color</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;violet&quot;</span><span class="p">):</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">notebook</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+        <span class="n">notebook</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+
+    <span class="n">root</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2016, Alex Kursell.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
